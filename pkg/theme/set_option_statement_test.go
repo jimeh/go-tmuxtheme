@@ -6,84 +6,104 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStatementInterfaceeCompliance(t *testing.T) {
+func TestSetOptionStatementInterfaceCompliance(t *testing.T) {
 	assert.Implements(t, (*Statement)(nil), &SetOptionStatement{})
 }
 
 var setOptionStatementParseTests = []struct {
-	body  string
-	flags *SetOptionFlags
-	args  []string
-	error error
+	body   string
+	flags  *SetOptionFlags
+	args   []string
+	option string
+	value  string
+	error  error
 }{
 	{
-		body:  `set -a val1 foo`,
-		flags: &SetOptionFlags{Append: true},
-		args:  []string{"val1", "foo"},
+		body:   `set -a val1 foo`,
+		flags:  &SetOptionFlags{Append: true},
+		option: "val1",
+		value:  "foo",
 	},
 	{
-		body:  `set -F val2 'foo bar'`,
-		flags: &SetOptionFlags{Format: true},
-		args:  []string{"val2", "foo bar"},
+		body:   `set -F val2 'foo bar'`,
+		flags:  &SetOptionFlags{Format: true},
+		option: "val2",
+		value:  "foo bar",
 	},
 	{
-		body:  `set -g val3 "foo bar"`,
-		flags: &SetOptionFlags{Global: true},
-		args:  []string{"val3", "foo bar"},
+		body:   `set -g val3 "foo bar"`,
+		flags:  &SetOptionFlags{Global: true},
+		option: "val3",
+		value:  "foo bar",
 	},
 	{
-		body:  `set -o val4 foo`,
-		flags: &SetOptionFlags{OnlyIfUnset: true},
-		args:  []string{"val4", "foo"},
+		body:   `set -o val4 foo`,
+		flags:  &SetOptionFlags{OnlyIfUnset: true},
+		option: "val4",
+		value:  "foo",
 	},
 	{
-		body:  `set -q val5 foo`,
-		flags: &SetOptionFlags{Quiet: true},
-		args:  []string{"val5", "foo"},
+		body:   `set -q val5 foo`,
+		flags:  &SetOptionFlags{Quiet: true},
+		option: "val5",
+		value:  "foo",
 	},
 	{
-		body:  `set -s val6 foo`,
-		flags: &SetOptionFlags{Server: true},
-		args:  []string{"val6", "foo"},
+		body:   `set -s val6 foo`,
+		flags:  &SetOptionFlags{Server: true},
+		option: "val6",
+		value:  "foo",
 	},
 	{
-		body:  `set -t other:3 val7 foo`,
-		flags: &SetOptionFlags{Target: "other:3"},
-		args:  []string{"val7", "foo"},
+		body:   `set -t other:3 val7 foo`,
+		flags:  &SetOptionFlags{Target: "other:3"},
+		option: "val7",
+		value:  "foo",
 	},
 	{
-		body:  `set -u val8 foo`,
-		flags: &SetOptionFlags{Unset: true},
-		args:  []string{"val8", "foo"},
+		body:   `set -u val8`,
+		flags:  &SetOptionFlags{Unset: true},
+		option: "val8",
 	},
 	{
-		body:  `set -w val9 foo`,
-		flags: &SetOptionFlags{Window: true},
-		args:  []string{"val9", "foo"},
+		body:   `set -w val9 foo`,
+		flags:  &SetOptionFlags{Window: true},
+		option: "val9",
+		value:  "foo",
 	},
 	{
-		body:  `set-option -w val10 foo`,
-		flags: &SetOptionFlags{Window: true},
-		args:  []string{"val10", "foo"},
+		body:   `set-option -w val10 foo`,
+		flags:  &SetOptionFlags{Window: true},
+		option: "val10",
+		value:  "foo",
 	},
 	{
-		body:  `set-window-option val11 foo`,
-		flags: &SetOptionFlags{Window: true},
-		args:  []string{"val11", "foo"},
+		body:   `set-window-option val11 foo`,
+		flags:  &SetOptionFlags{Window: true},
+		option: "val11",
+		value:  "foo",
 	},
 	{
-		body:  `set -goq @val12 'hello world'`,
-		flags: &SetOptionFlags{Global: true, OnlyIfUnset: true, Quiet: true},
-		args:  []string{"@val12", "hello world"},
+		body:   `set -goq @val12 'hello world'`,
+		flags:  &SetOptionFlags{Global: true, OnlyIfUnset: true, Quiet: true},
+		option: "@val12",
+		value:  "hello world",
 	},
 	{
-		body:  `set -gF @val13 'hello #{@other} world'`,
-		flags: &SetOptionFlags{Global: true, Format: true},
-		args:  []string{"@val13", "hello #{@other} world"},
+		body:   `set -gF @val13 'hello #{@other} world'`,
+		flags:  &SetOptionFlags{Global: true, Format: true},
+		option: "@val13",
+		value:  "hello #{@other} world",
 	},
 	{
-		body:  `has-session -t val14`,
-		error: &NotSupportedCommandError{"has-session", setOptionCommands},
+		body: `has-session -t val14`,
+		error: &NotSupportedCommandError{
+			"has-session", setOptionStatementCommands,
+		},
+	},
+	{
+		body:  `set -gu`,
+		error: &ArgumentError{"No option argument given"},
 	},
 }
 
@@ -97,12 +117,13 @@ func TestSetOptionStatementParse(t *testing.T) {
 			assert.Equal(t, tt.flags, s.Flags)
 		}
 
-		if tt.args != nil {
-			assert.Equal(t, tt.args, s.Arguments)
+		if tt.option != "" {
+			assert.Equal(t, tt.option, s.Option)
 		}
 
 		if tt.error != nil {
-			assert.Error(t, tt.error, err)
+			assert.Error(t, err)
+			assert.Equal(t, tt.error, err)
 		}
 	}
 }
@@ -241,6 +262,11 @@ var setOptionStatementExecuteTests = []struct {
 		body:         `set -F @foo "foo #{@bar} baz"`,
 		sessionSetup: map[string]string{"@bar": "bar"},
 		session:      map[string]string{"@bar": "bar", "@foo": "foo bar baz"},
+	},
+	{
+		body:         `set -F @foo "foo #{bar} baz"`,
+		sessionSetup: map[string]string{"bar": "bar"},
+		session:      map[string]string{"bar": "bar", "@foo": "foo bar baz"},
 	},
 	{
 		body:         `set -F @foo "foo #{@bar}#{@bar}"`,

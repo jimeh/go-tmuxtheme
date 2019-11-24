@@ -7,8 +7,12 @@ import (
 	"github.com/kballard/go-shellquote"
 )
 
-var setOptionCommands = []string{"set", "set-option", "set-window-option"}
-var setOptionFormatPattern = regexp.MustCompile("#{(@?[a-zA-Z0-9-_]+?)}")
+var setOptionStatementCommands = []string{
+	"set", "set-option", "set-window-option",
+}
+var setOptionStatementFormatPattern = regexp.MustCompile(
+	"#{(@?[a-zA-Z0-9-_]+?)}",
+)
 
 type SetOptionFlags struct {
 	Append      bool   `short:"a"`
@@ -23,36 +27,29 @@ type SetOptionFlags struct {
 }
 
 type SetOptionStatement struct {
-	Flags     *SetOptionFlags
-	Arguments []string
-	theme     *Theme
+	Flags  *SetOptionFlags
+	Option string
+	Value  string
+	theme  *Theme
 }
 
 func (s *SetOptionStatement) Parse(body string) error {
-	parts, err := shellquote.Split(body)
-	if err != nil {
-		return err
-	}
-	cmd, args := parts[0], parts[1:]
-
-	err = s.validateCommand(cmd)
+	args, err := shellquote.Split(body)
 	if err != nil {
 		return err
 	}
 
-	s.Flags = &SetOptionFlags{}
-	s.Arguments = []string{}
-
-	if cmd == "set-window-option" {
-		args = append([]string{"-w"}, args...)
-	}
-
-	s.Arguments, err = flags.ParseArgs(s.Flags, args)
+	args, err = s.parseCommand(args)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	args, err = s.parseFlags(args)
+	if err != nil {
+		return err
+	}
+
+	return s.parseArguments(args)
 }
 
 func (s *SetOptionStatement) Execute() error {
@@ -69,49 +66,77 @@ func (s *SetOptionStatement) Execute() error {
 	}
 }
 
-func (s *SetOptionStatement) validateCommand(cmd string) error {
-	for _, supportedCommand := range setOptionCommands {
+func (s *SetOptionStatement) parseCommand(args []string) ([]string, error) {
+	cmd, args := args[0], args[1:]
+
+	for _, supportedCommand := range setOptionStatementCommands {
 		if cmd == supportedCommand {
-			return nil
+			if cmd == "set-window-option" {
+				args = append([]string{"-w"}, args...)
+			}
+
+			return args, nil
 		}
 	}
 
-	return &NotSupportedCommandError{cmd, setOptionCommands}
+	return args, &NotSupportedCommandError{cmd, setOptionStatementCommands}
+}
+
+func (s *SetOptionStatement) parseFlags(args []string) ([]string, error) {
+	s.Flags = &SetOptionFlags{}
+	args, err := flags.ParseArgs(s.Flags, args)
+	if err != nil {
+		return nil, err
+	}
+
+	return args, nil
+}
+
+func (s *SetOptionStatement) parseArguments(args []string) error {
+	if len(args) == 0 {
+		return &ArgumentError{"No option argument given"}
+	}
+
+	s.Option = args[0]
+	if len(args) > 1 {
+		s.Value = args[1]
+	}
+	return nil
 }
 
 func (s *SetOptionStatement) applyValue(options *map[string]string) error {
-	name := s.Arguments[0]
+	option := s.Option
+	value := s.Value
 
 	if s.Flags.OnlyIfUnset {
-		if _, ok := (*options)[name]; ok {
+		if _, ok := (*options)[option]; ok {
 			return nil
 		}
 	}
 
 	if s.Flags.Unset {
-		delete((*options), name)
+		delete((*options), option)
 		return nil
 	}
 
-	value := s.Arguments[1]
 	if s.Flags.Format {
 		value = s.formatValue(value)
 	}
 
 	if s.Flags.Append {
-		(*options)[name] = (*options)[name] + value
+		(*options)[option] = (*options)[option] + value
 	} else {
-		(*options)[name] = value
+		(*options)[option] = value
 	}
 
 	return nil
 }
 
 func (s *SetOptionStatement) formatValue(value string) string {
-	return setOptionFormatPattern.ReplaceAllStringFunc(
+	return setOptionStatementFormatPattern.ReplaceAllStringFunc(
 		value,
 		func(match string) string {
-			name := setOptionFormatPattern.ReplaceAllString(match, `$1`)
+			name := setOptionStatementFormatPattern.ReplaceAllString(match, `$1`)
 			return s.lookupOptionValue(name)
 		},
 	)

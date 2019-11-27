@@ -54,15 +54,15 @@ func (s *SetOptionStatement) Parse(body string) error {
 
 func (s *SetOptionStatement) Execute() error {
 	if s.Flags.Server {
-		return s.applyValue(&s.theme.ServerOptions)
+		return s.applyValue(s.theme.ServerOptions)
 	} else if s.Flags.Global && s.Flags.Window {
-		return s.applyValue(&s.theme.GlobalWindowOptions)
+		return s.applyValue(s.theme.GlobalWindowOptions)
 	} else if s.Flags.Window {
-		return s.applyValue(&s.theme.WindowOptions)
+		return s.applyValue(s.theme.WindowOptions)
 	} else if s.Flags.Global {
-		return s.applyValue(&s.theme.GlobalSessionOptions)
+		return s.applyValue(s.theme.GlobalSessionOptions)
 	} else {
-		return s.applyValue(&s.theme.SessionOptions)
+		return s.applyValue(s.theme.SessionOptions)
 	}
 }
 
@@ -104,18 +104,18 @@ func (s *SetOptionStatement) parseArguments(args []string) error {
 	return nil
 }
 
-func (s *SetOptionStatement) applyValue(options *map[string]string) error {
+func (s *SetOptionStatement) applyValue(options map[string]string) error {
 	option := s.Option
 	value := s.Value
 
 	if s.Flags.OnlyIfUnset {
-		if _, ok := (*options)[option]; ok {
+		if _, ok := options[option]; ok {
 			return nil
 		}
 	}
 
 	if s.Flags.Unset {
-		delete((*options), option)
+		delete(options, option)
 		return nil
 	}
 
@@ -124,9 +124,9 @@ func (s *SetOptionStatement) applyValue(options *map[string]string) error {
 	}
 
 	if s.Flags.Append {
-		(*options)[option] = (*options)[option] + value
+		options[option] = options[option] + value
 	} else {
-		(*options)[option] = value
+		options[option] = value
 	}
 
 	return nil

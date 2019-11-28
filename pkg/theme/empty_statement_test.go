@@ -10,23 +10,23 @@ func TestEmptyStatementInterfaceCompliance(t *testing.T) {
 	assert.Implements(t, (*Statement)(nil), &EmptyStatement{})
 }
 
-var emptyStatementParseTests = []struct {
-	body  string
-	error error
-}{
-	{body: ``},
-	{
-		body:  `# This is a comment`,
-		error: &NotSupportedCommandError{"", []string{}},
-	},
-	{
-		body:  `set -g foo "bar"`,
-		error: &NotSupportedCommandError{"", []string{}},
-	},
-}
-
 func TestEmptyStatementParse(t *testing.T) {
-	for _, tt := range emptyStatementParseTests {
+	var tests = []struct {
+		body  string
+		error error
+	}{
+		{body: ``},
+		{
+			body:  `# This is a comment`,
+			error: &NotSupportedCommandError{"", []string{}},
+		},
+		{
+			body:  `set -g foo "bar"`,
+			error: &NotSupportedCommandError{"", []string{}},
+		},
+	}
+
+	for _, tt := range tests {
 		s := &EmptyStatement{}
 
 		err := s.Parse(tt.body)

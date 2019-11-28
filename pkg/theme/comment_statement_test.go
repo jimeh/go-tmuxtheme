@@ -10,42 +10,42 @@ func TestCommentStatementInterfaceCompliance(t *testing.T) {
 	assert.Implements(t, (*Statement)(nil), &CommentStatement{})
 }
 
-var commentStatementParseTests = []struct {
-	body  string
-	msg   string
-	error error
-}{
-	{body: `# This is a comment`, msg: "This is a comment"},
-	{body: `#  This is a comment`, msg: "This is a comment"},
-	{body: `#  This is a comment `, msg: "This is a comment"},
-	{body: `#This is a comment`, msg: "This is a comment"},
-	{body: `#This is a comment `, msg: "This is a comment"},
-	{body: `#This is a comment  `, msg: "This is a comment"},
-	{body: `  # This is a comment`, msg: "This is a comment"},
-	{body: `  #  This is a comment`, msg: "This is a comment"},
-	{body: `  #  This is a comment `, msg: "This is a comment"},
-	{body: `  #This is a comment`, msg: "This is a comment"},
-	{body: `  #This is a comment `, msg: "This is a comment"},
-	{body: `  #This is a comment  `, msg: "This is a comment"},
-	{body: `#`, msg: ""},
-	{body: `   #`, msg: ""},
-	{body: `#    `, msg: ""},
-	{
-		body:  ``,
-		error: &NotSupportedCommandError{"", []string{"#"}},
-	},
-	{
-		body:  `set -g @foo "bar"`,
-		error: &NotSupportedCommandError{"set", []string{"#"}},
-	},
-	{
-		body:  `set -g @foo "bar" # This is a comment`,
-		error: &NotSupportedCommandError{"set", []string{"#"}},
-	},
-}
-
 func TestCommentStatementParse(t *testing.T) {
-	for _, tt := range commentStatementParseTests {
+	var tests = []struct {
+		body  string
+		msg   string
+		error error
+	}{
+		{body: `# This is a comment`, msg: "This is a comment"},
+		{body: `#  This is a comment`, msg: "This is a comment"},
+		{body: `#  This is a comment `, msg: "This is a comment"},
+		{body: `#This is a comment`, msg: "This is a comment"},
+		{body: `#This is a comment `, msg: "This is a comment"},
+		{body: `#This is a comment  `, msg: "This is a comment"},
+		{body: `  # This is a comment`, msg: "This is a comment"},
+		{body: `  #  This is a comment`, msg: "This is a comment"},
+		{body: `  #  This is a comment `, msg: "This is a comment"},
+		{body: `  #This is a comment`, msg: "This is a comment"},
+		{body: `  #This is a comment `, msg: "This is a comment"},
+		{body: `  #This is a comment  `, msg: "This is a comment"},
+		{body: `#`, msg: ""},
+		{body: `   #`, msg: ""},
+		{body: `#    `, msg: ""},
+		{
+			body:  ``,
+			error: &NotSupportedCommandError{"", []string{"#"}},
+		},
+		{
+			body:  `set -g @foo "bar"`,
+			error: &NotSupportedCommandError{"set", []string{"#"}},
+		},
+		{
+			body:  `set -g @foo "bar" # This is a comment`,
+			error: &NotSupportedCommandError{"set", []string{"#"}},
+		},
+	}
+
+	for _, tt := range tests {
 		s := &CommentStatement{}
 
 		err := s.Parse(tt.body)

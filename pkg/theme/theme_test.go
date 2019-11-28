@@ -486,7 +486,6 @@ func TestThemeLoadFileAndExecute(t *testing.T) {
 	assert.Equal(t, theme.ServerOptions, map[string]string{})
 	assert.Equal(
 		t,
-		theme.GlobalSessionOptions,
 		map[string]string{
 			"@theme-clock-mode-colour":                   "red",
 			"@theme-clock-mode-style":                    "24",
@@ -553,6 +552,7 @@ func TestThemeLoadFileAndExecute(t *testing.T) {
 			"window-status-format":                       " #I:#W#F ",
 			"window-status-separator":                    "",
 		},
+		theme.GlobalSessionOptions,
 	)
 	assert.Equal(t, theme.SessionOptions, map[string]string{})
 	assert.Equal(t, theme.GlobalWindowOptions, map[string]string{})

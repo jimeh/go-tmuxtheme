@@ -81,7 +81,7 @@ set -gF @message \
 	}
 
 	for _, tt := range tests {
-		theme := NewTheme()
+		theme := New()
 		r := strings.NewReader(tt.body[1:])
 
 		err := theme.Parse(r)
@@ -447,7 +447,7 @@ set -gF @message "Hi #{@name}"
 	}
 
 	for _, tt := range tests {
-		theme := NewTheme()
+		theme := New()
 		r := strings.NewReader(strings.TrimLeft(tt.body, "\n"))
 
 		err := theme.Parse(r)
@@ -475,7 +475,7 @@ set -gF @message "Hi #{@name}"
 }
 
 func TestThemeLoadFileAndExecute(t *testing.T) {
-	theme := NewTheme()
+	theme := New()
 
 	err := theme.Load("theme_test.tmuxtheme")
 	require.NoError(t, err)

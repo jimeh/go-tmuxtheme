@@ -438,7 +438,7 @@ func TestSetOptionStatementExecute(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		theme := NewTheme()
+		theme := New()
 		s := &SetOptionStatement{}
 
 		if tt.serverSetup != nil {

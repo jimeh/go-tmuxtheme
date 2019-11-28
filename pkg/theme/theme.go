@@ -15,7 +15,7 @@ type Theme struct {
 	Statements           []Statement
 }
 
-func NewTheme() *Theme {
+func New() *Theme {
 	return &Theme{
 		ServerOptions:        map[string]string{},
 		GlobalSessionOptions: map[string]string{},

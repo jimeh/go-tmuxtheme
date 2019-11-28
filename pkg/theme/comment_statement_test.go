@@ -28,6 +28,7 @@ func TestCommentStatementParse(t *testing.T) {
 		{body: `  #This is a comment`, msg: "This is a comment"},
 		{body: `  #This is a comment `, msg: "This is a comment"},
 		{body: `  #This is a comment  `, msg: "This is a comment"},
+		{body: `# It's a comment`, msg: "It's a comment"},
 		{body: `#`, msg: ""},
 		{body: `   #`, msg: ""},
 		{body: `#    `, msg: ""},

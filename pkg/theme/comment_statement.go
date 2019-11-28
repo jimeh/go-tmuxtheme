@@ -42,7 +42,7 @@ func (s *CommentStatement) Parse(body string) error {
 	return nil
 }
 
-func (s *CommentStatement) Execute() error {
+func (s *CommentStatement) Execute(theme *Theme) error {
 	return nil
 }
 

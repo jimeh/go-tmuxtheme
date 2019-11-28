@@ -114,8 +114,16 @@ var setOptionStatementParseTests = []struct {
 		},
 	},
 	{
+		body:  ``,
+		error: &NotSupportedCommandError{"", setOptionStatementCommands},
+	},
+	{
+		body:  `set`,
+		error: &NotSupportedCommandError{"set", setOptionStatementCommands},
+	},
+	{
 		body:  `set -gu`,
-		error: &ArgumentError{"No option argument given"},
+		error: &NoOptionArgumentError{},
 	},
 }
 
@@ -153,123 +161,207 @@ var setOptionStatementExecuteTests = []struct {
 	globalWindowSetup  map[string]string
 	windowSetup        map[string]string
 }{
+	//
+	// Session Options
+	//
 	{
-		body:    `set @foo "bar"`,
-		session: map[string]string{"@foo": "bar"},
+		body:    `set @name "John"`,
+		session: map[string]string{"@name": "John"},
 	},
 	{
-		body:    `set-option @foo "bar"`,
-		session: map[string]string{"@foo": "bar"},
+		body:    `set-option @name "John"`,
+		session: map[string]string{"@name": "John"},
 	},
 	{
-		body:   `set -s @foo "bar"`,
-		server: map[string]string{"@foo": "bar"},
+		body:    `set -o @name "Jim"`,
+		session: map[string]string{"@name": "Jim"},
 	},
 	{
-		body:        `set -so @foo "bar"`,
-		serverSetup: map[string]string{"@foo": "foo"},
-		server:      map[string]string{"@foo": "foo"},
+		body:         `set -o @name "Jim"`,
+		sessionSetup: map[string]string{"@name": "John"},
+		session:      map[string]string{"@name": "John"},
 	},
 	{
-		body:          `set -g @foo "bar"`,
-		globalSession: map[string]string{"@foo": "bar"},
+		body:         `set -a @name "Jim"`,
+		sessionSetup: map[string]string{"@name": "John"},
+		session:      map[string]string{"@name": "JohnJim"},
 	},
 	{
-		body:               `set -og @foo "bar"`,
-		globalSessionSetup: map[string]string{"@foo": "foo"},
-		globalSession:      map[string]string{"@foo": "foo"},
+		body:         `set -u @name`,
+		sessionSetup: map[string]string{"@name": "John", "@foo": "bar"},
+		session:      map[string]string{"@foo": "bar"},
 	},
 	{
-		body:   `set -w @foo "bar"`,
-		window: map[string]string{"@foo": "bar"},
+		body:         `set -F @message "Hi #{@name}"`,
+		sessionSetup: map[string]string{"@name": "John Smith"},
+		session: map[string]string{
+			"@name":    "John Smith",
+			"@message": "Hi John Smith",
+		},
+	},
+	//
+	// Server Options
+	//
+	{
+		body:   `set -s @name "John"`,
+		server: map[string]string{"@name": "John"},
 	},
 	{
-		body:        `set -wo @foo "bar"`,
-		windowSetup: map[string]string{"@foo": "foo"},
-		window:      map[string]string{"@foo": "foo"},
+		body:   `set-option -s @name "John"`,
+		server: map[string]string{"@name": "John"},
 	},
 	{
-		body:         `set -wg @foo "bar"`,
-		globalWindow: map[string]string{"@foo": "bar"},
+		body:   `set -so @name "Jim"`,
+		server: map[string]string{"@name": "Jim"},
 	},
 	{
-		body:              `set -wgo @foo "bar"`,
-		globalWindowSetup: map[string]string{"@foo": "foo"},
-		globalWindow:      map[string]string{"@foo": "foo"},
+		body:        `set -so @name "Jim"`,
+		serverSetup: map[string]string{"@name": "John"},
+		server:      map[string]string{"@name": "John"},
 	},
 	{
-		body:   `set-window-option @foo "bar"`,
-		window: map[string]string{"@foo": "bar"},
+		body:        `set -sa @name "Jim"`,
+		serverSetup: map[string]string{"@name": "John"},
+		server:      map[string]string{"@name": "JohnJim"},
 	},
 	{
-		body:        `set-window-option -o @foo "bar"`,
-		windowSetup: map[string]string{"@foo": "foo"},
-		window:      map[string]string{"@foo": "foo"},
+		body:        `set -su @name`,
+		serverSetup: map[string]string{"@name": "John", "@foo": "bar"},
+		server:      map[string]string{"@foo": "bar"},
 	},
 	{
-		body:         `set-window-option -g @foo "bar"`,
-		globalWindow: map[string]string{"@foo": "bar"},
+		body:        `set -sF @message "Hi #{@name}"`,
+		serverSetup: map[string]string{"@name": "John Smith"},
+		server: map[string]string{
+			"@name":    "John Smith",
+			"@message": "Hi John Smith",
+		},
+	},
+	//
+	// Global Session Options
+	//
+	{
+		body:          `set -g @name "John"`,
+		globalSession: map[string]string{"@name": "John"},
 	},
 	{
-		body:              `set-window-option -go @foo "bar"`,
-		globalWindowSetup: map[string]string{"@foo": "foo"},
-		globalWindow:      map[string]string{"@foo": "foo"},
+		body:          `set-option -g @name "John"`,
+		globalSession: map[string]string{"@name": "John"},
 	},
 	{
-		body:        `set -sa @foo "bar"`,
-		serverSetup: map[string]string{"@foo": "foo"},
-		server:      map[string]string{"@foo": "foobar"},
+		body:          `set -go @name "Jim"`,
+		globalSession: map[string]string{"@name": "Jim"},
 	},
 	{
-		body:               `set -ga @foo "bar"`,
-		globalSessionSetup: map[string]string{"@foo": "foo"},
-		globalSession:      map[string]string{"@foo": "foobar"},
+		body:               `set -go @name "Jim"`,
+		globalSessionSetup: map[string]string{"@name": "John"},
+		globalSession:      map[string]string{"@name": "John"},
 	},
 	{
-		body:         `set -a @foo "bar"`,
-		sessionSetup: map[string]string{"@foo": "foo"},
-		session:      map[string]string{"@foo": "foobar"},
+		body:               `set -ga @name "Jim"`,
+		globalSessionSetup: map[string]string{"@name": "John"},
+		globalSession:      map[string]string{"@name": "JohnJim"},
 	},
 	{
-		body:              `set -gwa @foo "bar"`,
-		globalWindowSetup: map[string]string{"@foo": "foo"},
-		globalWindow:      map[string]string{"@foo": "foobar"},
+		body:               `set -gu @name`,
+		globalSessionSetup: map[string]string{"@name": "John", "@foo": "bar"},
+		globalSession:      map[string]string{"@foo": "bar"},
 	},
 	{
-		body:        `set -wa @foo "bar"`,
-		windowSetup: map[string]string{"@foo": "foo"},
-		window:      map[string]string{"@foo": "foobar"},
+		body:               `set -gF @message "Hi #{@name}"`,
+		globalSessionSetup: map[string]string{"@name": "John Smith"},
+		globalSession: map[string]string{
+			"@name":    "John Smith",
+			"@message": "Hi John Smith",
+		},
+	},
+	//
+	// Window Options
+	//
+	{
+		body:   `set -w @name "John"`,
+		window: map[string]string{"@name": "John"},
 	},
 	{
-		body:        `set -su @foo`,
-		serverSetup: map[string]string{"@foo": "foo", "@bar": "bar"},
-		server:      map[string]string{"@bar": "bar"},
+		body:   `set-option -w @name "John"`,
+		window: map[string]string{"@name": "John"},
 	},
 	{
-		body:               `set -gu @foo`,
-		globalSessionSetup: map[string]string{"@foo": "foo", "@bar": "bar"},
-		globalSession:      map[string]string{"@bar": "bar"},
+		body:   `set-window-option @name "John"`,
+		window: map[string]string{"@name": "John"},
 	},
 	{
-		body:         `set -u @foo`,
-		sessionSetup: map[string]string{"@foo": "foo", "@bar": "bar"},
-		session:      map[string]string{"@bar": "bar"},
+		body:   `set -wo @name "Jim"`,
+		window: map[string]string{"@name": "Jim"},
 	},
 	{
-		body:              `set -gwu @foo`,
-		globalWindowSetup: map[string]string{"@foo": "foo", "@bar": "bar"},
-		globalWindow:      map[string]string{"@bar": "bar"},
+		body:        `set -wo @name "Jim"`,
+		windowSetup: map[string]string{"@name": "John"},
+		window:      map[string]string{"@name": "John"},
 	},
 	{
-		body:        `set -wu @foo`,
-		windowSetup: map[string]string{"@foo": "foo", "@bar": "bar"},
-		window:      map[string]string{"@bar": "bar"},
+		body:        `set -wa @name "Jim"`,
+		windowSetup: map[string]string{"@name": "John"},
+		window:      map[string]string{"@name": "JohnJim"},
 	},
 	{
-		body:         `set -u @hello`,
-		sessionSetup: map[string]string{"@foo": "foo", "@bar": "bar"},
-		session:      map[string]string{"@foo": "foo", "@bar": "bar"},
+		body:        `set -wu @name`,
+		windowSetup: map[string]string{"@name": "John", "@foo": "bar"},
+		window:      map[string]string{"@foo": "bar"},
 	},
+	{
+		body:        `set -wF @message "Hi #{@name}"`,
+		windowSetup: map[string]string{"@name": "John Smith"},
+		window: map[string]string{
+			"@name":    "John Smith",
+			"@message": "Hi John Smith",
+		},
+	},
+	//
+	// Global Window Options
+	//
+	{
+		body:         `set -gw @name "John"`,
+		globalWindow: map[string]string{"@name": "John"},
+	},
+	{
+		body:         `set-option -wg @name "John"`,
+		globalWindow: map[string]string{"@name": "John"},
+	},
+	{
+		body:         `set-window-option -g @name "John"`,
+		globalWindow: map[string]string{"@name": "John"},
+	},
+	{
+		body:         `set -wgo @name "Jim"`,
+		globalWindow: map[string]string{"@name": "Jim"},
+	},
+	{
+		body:              `set -gwo @name "Jim"`,
+		globalWindowSetup: map[string]string{"@name": "John"},
+		globalWindow:      map[string]string{"@name": "John"},
+	},
+	{
+		body:              `set -wga @name "Jim"`,
+		globalWindowSetup: map[string]string{"@name": "John"},
+		globalWindow:      map[string]string{"@name": "JohnJim"},
+	},
+	{
+		body:              `set -gwu @name`,
+		globalWindowSetup: map[string]string{"@name": "John", "@foo": "bar"},
+		globalWindow:      map[string]string{"@foo": "bar"},
+	},
+	{
+		body:              `set -wgF @message "Hi #{@name}"`,
+		globalWindowSetup: map[string]string{"@name": "John Smith"},
+		globalWindow: map[string]string{
+			"@name":    "John Smith",
+			"@message": "Hi John Smith",
+		},
+	},
+	//
+	// Formatting
+	//
 	{
 		body:         `set -F @foo "foo #{@bar} baz"`,
 		sessionSetup: map[string]string{"@bar": "bar"},
@@ -312,12 +404,42 @@ var setOptionStatementExecuteTests = []struct {
 		sessionSetup: map[string]string{"@bar": "bar", "@foo": "foo"},
 		session:      map[string]string{"@bar": "bar", "@foo": "foo bar baz"},
 	},
+	{
+		body:          `set -gF @message "Hi #{@name}"`,
+		windowSetup:   map[string]string{"@name": "John"},
+		window:        map[string]string{"@name": "John"},
+		globalSession: map[string]string{"@message": "Hi John"},
+	},
+	{
+		body:              `set -gF @message "Hi #{@name}"`,
+		globalWindowSetup: map[string]string{"@name": "John"},
+		globalWindow:      map[string]string{"@name": "John"},
+		globalSession:     map[string]string{"@message": "Hi John"},
+	},
+	{
+		body:          `set -gF @message "Hi #{@name}"`,
+		sessionSetup:  map[string]string{"@name": "John"},
+		session:       map[string]string{"@name": "John"},
+		globalSession: map[string]string{"@message": "Hi John"},
+	},
+	{
+		body:               `set -sF @message "Hi #{@name}"`,
+		globalSessionSetup: map[string]string{"@name": "John"},
+		globalSession:      map[string]string{"@name": "John"},
+		server:             map[string]string{"@message": "Hi John"},
+	},
+	{
+		body:          `set -gF @message "Hi #{@name}"`,
+		serverSetup:   map[string]string{"@name": "John"},
+		server:        map[string]string{"@name": "John"},
+		globalSession: map[string]string{"@message": "Hi John"},
+	},
 }
 
 func TestSetOptionStatementExecute(t *testing.T) {
 	for _, tt := range setOptionStatementExecuteTests {
 		theme := NewTheme()
-		s := &SetOptionStatement{theme: theme}
+		s := &SetOptionStatement{}
 
 		if tt.serverSetup != nil {
 			theme.ServerOptions = tt.serverSetup
@@ -338,7 +460,7 @@ func TestSetOptionStatementExecute(t *testing.T) {
 		err := s.Parse(tt.body)
 		assert.NoError(t, err)
 
-		err = s.Execute()
+		err = s.Execute(theme)
 		assert.NoError(t, err)
 
 		if tt.server != nil {

@@ -30,7 +30,6 @@ type SetOptionStatement struct {
 	Flags  *SetOptionFlags
 	Option string
 	Value  string
-	theme  *Theme
 }
 
 func (s *SetOptionStatement) Parse(body string) error {
@@ -52,31 +51,39 @@ func (s *SetOptionStatement) Parse(body string) error {
 	return s.parseArguments(args)
 }
 
-func (s *SetOptionStatement) Execute() error {
+func (s *SetOptionStatement) Execute(theme *Theme) error {
 	if s.Flags.Server {
-		return s.applyValue(s.theme.ServerOptions)
+		return s.applyValue(theme, theme.ServerOptions)
 	} else if s.Flags.Global && s.Flags.Window {
-		return s.applyValue(s.theme.GlobalWindowOptions)
+		return s.applyValue(theme, theme.GlobalWindowOptions)
 	} else if s.Flags.Window {
-		return s.applyValue(s.theme.WindowOptions)
+		return s.applyValue(theme, theme.WindowOptions)
 	} else if s.Flags.Global {
-		return s.applyValue(s.theme.GlobalSessionOptions)
+		return s.applyValue(theme, theme.GlobalSessionOptions)
 	} else {
-		return s.applyValue(s.theme.SessionOptions)
+		return s.applyValue(theme, theme.SessionOptions)
 	}
 }
 
 func (s *SetOptionStatement) parseCommand(args []string) ([]string, error) {
-	cmd, args := args[0], args[1:]
+	cmd := ""
 
-	for _, supportedCommand := range setOptionStatementCommands {
-		if cmd == supportedCommand {
-			if cmd == "set-window-option" {
-				args = append([]string{"-w"}, args...)
+	if len(args) > 1 {
+		cmd, args = args[0], args[1:]
+		for _, c := range setOptionStatementCommands {
+			if cmd == c {
+				if cmd == "set-window-option" {
+					args = append([]string{"-w"}, args...)
+				}
+
+				return args, nil
 			}
-
-			return args, nil
 		}
+	} else {
+		if len(args) == 1 {
+			cmd = args[0]
+		}
+		args = []string{}
 	}
 
 	return args, &NotSupportedCommandError{cmd, setOptionStatementCommands}
@@ -94,7 +101,7 @@ func (s *SetOptionStatement) parseFlags(args []string) ([]string, error) {
 
 func (s *SetOptionStatement) parseArguments(args []string) error {
 	if len(args) == 0 {
-		return &ArgumentError{"No option argument given"}
+		return &NoOptionArgumentError{}
 	}
 
 	s.Option = args[0]
@@ -104,7 +111,7 @@ func (s *SetOptionStatement) parseArguments(args []string) error {
 	return nil
 }
 
-func (s *SetOptionStatement) applyValue(options map[string]string) error {
+func (s *SetOptionStatement) applyValue(theme *Theme, options map[string]string) error {
 	option := s.Option
 	value := s.Value
 
@@ -120,7 +127,7 @@ func (s *SetOptionStatement) applyValue(options map[string]string) error {
 	}
 
 	if s.Flags.Format {
-		value = s.formatValue(value)
+		value = s.formatValue(theme, value)
 	}
 
 	if s.Flags.Append {
@@ -132,26 +139,28 @@ func (s *SetOptionStatement) applyValue(options map[string]string) error {
 	return nil
 }
 
-func (s *SetOptionStatement) formatValue(value string) string {
+func (s *SetOptionStatement) formatValue(theme *Theme, value string) string {
 	return setOptionStatementFormatPattern.ReplaceAllStringFunc(
 		value,
 		func(match string) string {
-			name := setOptionStatementFormatPattern.ReplaceAllString(match, `$1`)
-			return s.lookupOptionValue(name)
+			name := setOptionStatementFormatPattern.ReplaceAllString(
+				match, `$1`,
+			)
+			return s.lookupOptionValue(theme, name)
 		},
 	)
 }
 
-func (s *SetOptionStatement) lookupOptionValue(name string) string {
-	if val, ok := s.theme.WindowOptions[name]; ok {
+func (s *SetOptionStatement) lookupOptionValue(theme *Theme, name string) string {
+	if val, ok := theme.WindowOptions[name]; ok {
 		return val
-	} else if val, ok := s.theme.GlobalWindowOptions[name]; ok {
+	} else if val, ok := theme.GlobalWindowOptions[name]; ok {
 		return val
-	} else if val, ok := s.theme.SessionOptions[name]; ok {
+	} else if val, ok := theme.SessionOptions[name]; ok {
 		return val
-	} else if val, ok := s.theme.GlobalSessionOptions[name]; ok {
+	} else if val, ok := theme.GlobalSessionOptions[name]; ok {
 		return val
-	} else if val, ok := s.theme.ServerOptions[name]; ok {
+	} else if val, ok := theme.ServerOptions[name]; ok {
 		return val
 	}
 

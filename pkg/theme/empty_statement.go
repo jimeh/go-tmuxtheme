@@ -16,6 +16,6 @@ func (s *EmptyStatement) Parse(body string) error {
 	return nil
 }
 
-func (s *EmptyStatement) Execute() error {
+func (s *EmptyStatement) Execute(theme *Theme) error {
 	return nil
 }

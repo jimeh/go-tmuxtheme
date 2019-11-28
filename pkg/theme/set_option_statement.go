@@ -2,6 +2,7 @@ package theme
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/jessevdk/go-flags"
 	"github.com/kballard/go-shellquote"
@@ -35,7 +36,10 @@ type SetOptionStatement struct {
 func (s *SetOptionStatement) Parse(body string) error {
 	args, err := shellquote.Split(body)
 	if err != nil {
-		return err
+		return &NotSupportedCommandError{
+			strings.SplitN(strings.TrimSpace(body), " ", 2)[0],
+			setOptionStatementCommands,
+		}
 	}
 
 	args, err = s.parseCommand(args)

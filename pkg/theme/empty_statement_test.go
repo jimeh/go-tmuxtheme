@@ -18,11 +18,19 @@ func TestEmptyStatementParse(t *testing.T) {
 		{body: ``},
 		{
 			body:  `# This is a comment`,
-			error: &NotSupportedCommandError{"", []string{}},
+			error: &NotSupportedCommandError{"#", []string{}},
+		},
+		{
+			body:  `# it's a comment`,
+			error: &NotSupportedCommandError{"#", []string{}},
+		},
+		{
+			body:  `  # it's a comment`,
+			error: &NotSupportedCommandError{"#", []string{}},
 		},
 		{
 			body:  `set -g foo "bar"`,
-			error: &NotSupportedCommandError{"", []string{}},
+			error: &NotSupportedCommandError{"set", []string{}},
 		},
 	}
 

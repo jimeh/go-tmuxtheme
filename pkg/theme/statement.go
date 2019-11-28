@@ -7,9 +7,9 @@ type Statement interface {
 
 func NewStatement(body string) (Statement, error) {
 	statements := []Statement{
-		&SetOptionStatement{},
-		&CommentStatement{},
 		&EmptyStatement{},
+		&CommentStatement{},
+		&SetOptionStatement{},
 	}
 
 	for _, t := range statements {

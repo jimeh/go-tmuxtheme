@@ -2,6 +2,8 @@
 # Basic theme
 #
 
+# This theme tweaks Tmux's style so the different components are more distinct.
+
 # Themepack format options
 set -goq @themepack-status-left-area-left-format "#S"
 set -goq @themepack-status-left-area-middle-format "#I"

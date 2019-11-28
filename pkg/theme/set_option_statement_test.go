@@ -123,6 +123,14 @@ func TestSetOptionStatementParse(t *testing.T) {
 			error: &NotSupportedCommandError{"set", setOptionStatementCommands},
 		},
 		{
+			body:  `# This is a comment`,
+			error: &NotSupportedCommandError{"#", setOptionStatementCommands},
+		},
+		{
+			body:  `  # It's a comment`,
+			error: &NotSupportedCommandError{"#", setOptionStatementCommands},
+		},
+		{
 			body:  `set -gu`,
 			error: &NoOptionArgumentError{},
 		},

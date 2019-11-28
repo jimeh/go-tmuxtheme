@@ -3,6 +3,7 @@ package theme
 import (
 	"bufio"
 	"io"
+	"os"
 )
 
 type Theme struct {
@@ -55,4 +56,14 @@ func (s *Theme) Execute() error {
 		}
 	}
 	return nil
+}
+
+func (s *Theme) Load(filename string) error {
+	r, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+
+	return s.Parse(r)
 }

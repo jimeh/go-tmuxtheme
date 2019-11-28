@@ -1,0 +1,73 @@
+#
+# Basic theme
+#
+
+# Themepack format options
+set -goq @themepack-status-left-area-left-format "#S"
+set -goq @themepack-status-left-area-middle-format "#I"
+set -goq @themepack-status-left-area-right-format "#P"
+set -goq @themepack-status-right-area-left-format "#H"
+set -goq @themepack-status-right-area-middle-format "%H:%M:%S"
+set -goq @themepack-status-right-area-right-format "%d-%b-%y"
+set -goq @themepack-window-status-current-format "#I:#W#F"
+set -goq @themepack-window-status-format "#I:#W#F"
+
+# Theme options
+set -goq  @theme-clock-mode-colour red
+set -goq  @theme-clock-mode-style 24
+set -goq  @theme-display-panes-active-colour default
+set -goq  @theme-display-panes-colour default
+set -goq  @theme-message-bg default
+set -goq  @theme-message-command-bg default
+set -goq  @theme-message-command-fg default
+set -goq  @theme-message-fg default
+set -goq  @theme-mode-bg red
+set -goq  @theme-mode-fg default
+set -goq  @theme-pane-active-border-bg default
+set -goq  @theme-pane-active-border-fg green
+set -goq  @theme-pane-border-bg default
+set -goq  @theme-pane-border-fg default
+set -goq  @theme-status-bg black
+set -goq  @theme-status-fg cyan
+set -goq  @theme-status-interval 1
+set -goq  @theme-status-justify centre
+set -goqF @theme-status-left "#{@themepack-status-left-area-left-format} #[fg=white]» #[fg=yellow]#{@themepack-status-left-area-middle-format} #[fg=cyan]#{@themepack-status-left-area-right-format}"
+set -goq  @theme-status-left-bg black
+set -goq  @theme-status-left-fg green
+set -goq  @theme-status-left-length 40
+set -goqF @theme-status-right "#{@themepack-status-right-area-left-format} #[fg=white]« #[fg=yellow]#{@themepack-status-right-area-middle-format} #[fg=green]#{@themepack-status-right-area-right-format}"
+set -goq  @theme-status-right-bg black
+set -goq  @theme-status-right-fg cyan
+set -goq  @theme-status-right-length 40
+set -goq  @theme-window-status-activity-bg black
+set -goq  @theme-window-status-activity-fg yellow
+set -goq  @theme-window-status-current-bg red
+set -goq  @theme-window-status-current-fg black
+set -goqF @theme-window-status-current-format " #{@themepack-window-status-current-format} "
+set -goqF @theme-window-status-format " #{@themepack-window-status-format} "
+set -goq  @theme-window-status-separator ""
+
+# Apply theme options
+set -gF clock-mode-colour "#{@theme-clock-mode-colour}"
+set -gF clock-mode-style "#{@theme-clock-mode-style}"
+set -gF display-panes-active-colour "#{@theme-display-panes-active-colour}"
+set -gF display-panes-colour "#{@theme-display-panes-colour}"
+set -gF message-command-style "bg=#{@theme-message-command-bg},fg=#{@theme-message-command-fg}"
+set -gF message-style "bg=#{@theme-message-bg},fg=#{@theme-message-fg}"
+set -gF mode-style "bg=#{@theme-mode-bg},fg=#{@theme-mode-fg}"
+set -gF pane-active-border-style "bg=#{@theme-pane-active-border-bg},fg=#{@theme-pane-active-border-fg}"
+set -gF pane-border-style "bg=#{@theme-pane-border-bg},fg=#{@theme-pane-border-fg}"
+set -gF status-interval "#{@theme-status-interval}"
+set -gF status-justify "#{@theme-status-justify}"
+set -gF status-left "#{@theme-status-left}"
+set -gF status-left-length "#{@theme-status-left-length}"
+set -gF status-left-style "bg=#{@theme-status-left-bg},fg=#{@theme-status-left-fg}"
+set -gF status-right "#{@theme-status-right}"
+set -gF status-right-length "#{@theme-status-right-length}"
+set -gF status-right-style "bg=#{@theme-status-right-bg},fg=#{@theme-status-right-fg}"
+set -gF status-style "bg=#{@theme-status-bg},fg=#{@theme-status-fg}"
+set -gF window-status-activity-style "bg=#{@theme-window-status-activity-bg},fg=#{@theme-window-status-activity-fg}"
+set -gF window-status-current-format "#{@theme-window-status-current-format}"
+set -gF window-status-current-style "bg=#{@theme-window-status-current-bg},fg=#{@theme-window-status-current-fg}"
+set -gF window-status-format "#{@theme-window-status-format}"
+set -gF window-status-separator "#{@theme-window-status-separator}"

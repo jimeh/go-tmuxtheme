@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestThemeParse(t *testing.T) {
@@ -471,4 +472,85 @@ set -gF @message "Hi #{@name}"
 			assert.Equal(t, tt.window, theme.WindowOptions)
 		}
 	}
+}
+
+func TestThemeLoadFileAndExecute(t *testing.T) {
+	theme := NewTheme()
+
+	err := theme.Load("theme_test.tmuxtheme")
+	require.NoError(t, err)
+
+	err = theme.Execute()
+	require.NoError(t, err)
+
+	assert.Equal(
+		t,
+		theme.GlobalSessionOptions,
+		map[string]string{
+			"@theme-clock-mode-colour":                   "red",
+			"@theme-clock-mode-style":                    "24",
+			"@theme-display-panes-active-colour":         "default",
+			"@theme-display-panes-colour":                "default",
+			"@theme-message-bg":                          "default",
+			"@theme-message-command-bg":                  "default",
+			"@theme-message-command-fg":                  "default",
+			"@theme-message-fg":                          "default",
+			"@theme-mode-bg":                             "red",
+			"@theme-mode-fg":                             "default",
+			"@theme-pane-active-border-bg":               "default",
+			"@theme-pane-active-border-fg":               "green",
+			"@theme-pane-border-bg":                      "default",
+			"@theme-pane-border-fg":                      "default",
+			"@theme-status-bg":                           "black",
+			"@theme-status-fg":                           "cyan",
+			"@theme-status-interval":                     "1",
+			"@theme-status-justify":                      "centre",
+			"@theme-status-left":                         "#S #[fg=white]» #[fg=yellow]#I #[fg=cyan]#P",
+			"@theme-status-left-bg":                      "black",
+			"@theme-status-left-fg":                      "green",
+			"@theme-status-left-length":                  "40",
+			"@theme-status-right":                        "#H #[fg=white]« #[fg=yellow]%H:%M:%S #[fg=green]%d-%b-%y",
+			"@theme-status-right-bg":                     "black",
+			"@theme-status-right-fg":                     "cyan",
+			"@theme-status-right-length":                 "40",
+			"@theme-window-status-activity-bg":           "black",
+			"@theme-window-status-activity-fg":           "yellow",
+			"@theme-window-status-current-bg":            "red",
+			"@theme-window-status-current-fg":            "black",
+			"@theme-window-status-current-format":        " #I:#W#F ",
+			"@theme-window-status-format":                " #I:#W#F ",
+			"@theme-window-status-separator":             "",
+			"@themepack-status-left-area-left-format":    "#S",
+			"@themepack-status-left-area-middle-format":  "#I",
+			"@themepack-status-left-area-right-format":   "#P",
+			"@themepack-status-right-area-left-format":   "#H",
+			"@themepack-status-right-area-middle-format": "%H:%M:%S",
+			"@themepack-status-right-area-right-format":  "%d-%b-%y",
+			"@themepack-window-status-current-format":    "#I:#W#F",
+			"@themepack-window-status-format":            "#I:#W#F",
+			"clock-mode-colour":                          "red",
+			"clock-mode-style":                           "24",
+			"display-panes-active-colour":                "default",
+			"display-panes-colour":                       "default",
+			"message-command-style":                      "bg=default,fg=default",
+			"message-style":                              "bg=default,fg=default",
+			"mode-style":                                 "bg=red,fg=default",
+			"pane-active-border-style":                   "bg=default,fg=green",
+			"pane-border-style":                          "bg=default,fg=default",
+			"status-interval":                            "1",
+			"status-justify":                             "centre",
+			"status-left":                                "#S #[fg=white]» #[fg=yellow]#I #[fg=cyan]#P",
+			"status-left-length":                         "40",
+			"status-left-style":                          "bg=black,fg=green",
+			"status-right":                               "#H #[fg=white]« #[fg=yellow]%H:%M:%S #[fg=green]%d-%b-%y",
+			"status-right-length":                        "40",
+			"status-right-style":                         "bg=black,fg=cyan",
+			"status-style":                               "bg=black,fg=cyan",
+			"window-status-activity-style":               "bg=black,fg=yellow",
+			"window-status-current-format":               " #I:#W#F ",
+			"window-status-current-style":                "bg=red,fg=black",
+			"window-status-format":                       " #I:#W#F ",
+			"window-status-separator":                    "",
+		},
+	)
 }

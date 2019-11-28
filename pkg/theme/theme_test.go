@@ -483,6 +483,7 @@ func TestThemeLoadFileAndExecute(t *testing.T) {
 	err = theme.Execute()
 	require.NoError(t, err)
 
+	assert.Equal(t, theme.ServerOptions, map[string]string{})
 	assert.Equal(
 		t,
 		theme.GlobalSessionOptions,
@@ -553,4 +554,7 @@ func TestThemeLoadFileAndExecute(t *testing.T) {
 			"window-status-separator":                    "",
 		},
 	)
+	assert.Equal(t, theme.SessionOptions, map[string]string{})
+	assert.Equal(t, theme.GlobalWindowOptions, map[string]string{})
+	assert.Equal(t, theme.WindowOptions, map[string]string{})
 }
